@@ -44,11 +44,11 @@ void linking_data::init() {
 }
 
 void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
-    STRAW_presetting *straw = new STRAW_presetting(STRAW_EVENT_tree);
-    MAMBA_presetting *mamba = new MAMBA_presetting(MAMBA_EVENT_tree);
-    histos *hist = new histos();
+    auto *straw = new STRAW_presetting(STRAW_EVENT_tree);
+    auto *mamba = new MAMBA_presetting(MAMBA_EVENT_tree);
+    auto *hist = new histos();
 
-    mam_nEntries = MAMBA_EVENT_tree->GetEntries();
+    mam_nEntries = (Int_t)MAMBA_EVENT_tree->GetEntries();
     N = mam_nEntries;
     cout << "requesting " << N << " events..." << endl;
 
@@ -57,7 +57,7 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
 /// progress bar
         int barWidth = 70;
         cout << "\033[0;32m[\033[0m" ;
-        Int_t pos = barWidth * ((float)i / (float)N);
+        auto pos = (int)(barWidth * ((float)i / (float)N));
         for (int bar = 0; bar < barWidth; ++bar) {
             if (bar < pos) cout << "\033[0;32m=\033[0m";
             else if (bar == pos) cout << "\033[0;32m>\033[0m";
@@ -76,6 +76,32 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
         count_processed++;
     }
     cout << endl;
+
+    (hist->vshapeUS_proj)=(hist->vshapeUS)->ProjectionX();
+    // need to make copies of this hist because range will be changed in Limits_S/L
+    (hist->vshapeUL_proj)=(hist->vshapeUL)->ProjectionX();
+    (hist->vshapeUS_proj_Y)=(hist->vshapeVS)->ProjectionX();
+    (hist->vshapeUL_proj_Y)=(hist->vshapeVL)->ProjectionX();
+
+
+
+    limits_S(hist, *range_S);
+    limits_L(hist, *range_L);
+    left_limit_S = range_S[0] - 0.1;
+    left_limit_L = range_L[0] - 0.1;
+    right_limit_S = range_S[1] + 0.1;
+    right_limit_L = range_L[1] + 0.1;
+
+    for (int i = 0; i < StrawPoint_S.size(); i++) {
+        if (StrawPoint_S.at(i) >= left_limit_S && StrawPoint_S.at(i) <= right_limit_S) {
+            (hist->vshapeUS_clear)->Fill(StrawPoint_S.at(i), timing_S.at(i));
+        }
+    }
+    for (int i = 0; i < StrawPoint_L.size(); i++) {
+        if (StrawPoint_L.at(i) >= left_limit_L && StrawPoint_L.at(i) <= right_limit_L) {
+            (hist->vshapeUL_clear)->Fill(StrawPoint_L.at(i), timing_L.at(i));
+        }
+    }
 
     makingProfile(hist);
     StrawResolution_S(hist);
@@ -109,41 +135,36 @@ void linking_data::track_ana(MAMBA_presetting *mamba, STRAW_presetting *straw) {
 }
 
 void linking_data::makingProfile(histos *hist) {
-    (hist->vshapeUS_proj)=(hist->vshapeUS_clear)->ProjectionX();
-    (hist->vshapeUL_proj)=(hist->vshapeUL_clear)->ProjectionX();
-    (hist->vshapeUS_proj_Y)=(hist->vshapeUS_clear)->ProjectionY();
-    (hist->vshapeUL_proj_Y)=(hist->vshapeUL_clear)->ProjectionY();
-
-    for (int i = 0; i < (hist->vshapeUL)->GetSize(); i++) {
-        if ((hist->vshapeUL)->GetBinContent(i) > Max_Long) {
-            Max_Long = (hist->vshapeUL)->GetBinContent(i);
-        }
-    }
-    for (int i = 0; i < (hist->vshapeUS)->GetSize(); i++) {
-        if ((hist->vshapeUS)->GetBinContent(i) > Max_Short) {
-            Max_Short = (hist->vshapeUS)->GetBinContent(i);
-        }
-    }
-
-    Max_Long *= 0.05;
-    Max_Short *= 0.01;
-
-    for (int i = 0; i < (hist->vshapeUL_clear)->GetSize(); i++) {
-        if ((hist->vshapeUL_clear)->GetBinContent(i) < Max_Long && (hist->vshapeUL_clear)->GetBinContent(i) != 0) {
-            (hist->vshapeUL_clear)->SetBinContent(i, 0);
-        }
-    }
-    for (int i = 0; i < (hist->vshapeUS_clear)->GetSize(); i++) {
-        if ((hist->vshapeUS_clear)->GetBinContent(i) < Max_Short && (hist->vshapeUS_clear)->GetBinContent(i) != 0) {
-            (hist->vshapeUS_clear)->SetBinContent(i, 0);
-        }
-    }
+//    for (int i = 0; i < (hist->vshapeUL)->GetSize(); i++) {
+//        if ((hist->vshapeUL)->GetBinContent(i) > Max_Long) {
+//            Max_Long = (hist->vshapeUL)->GetBinContent(i);
+//        }
+//    }
+//    for (int i = 0; i < (hist->vshapeUS)->GetSize(); i++) {
+//        if ((hist->vshapeUS)->GetBinContent(i) > Max_Short) {
+//            Max_Short = (hist->vshapeUS)->GetBinContent(i);
+//        }
+//    }
+//
+//    Max_Long *= 0.05;
+//    Max_Short *= 0.01;
+//
+//    for (int i = 0; i < (hist->vshapeUL_clear)->GetSize(); i++) {
+//        if ((hist->vshapeUL_clear)->GetBinContent(i) < Max_Long && (hist->vshapeUL_clear)->GetBinContent(i) != 0) {
+//            (hist->vshapeUL_clear)->SetBinContent(i, 0);
+//        }
+//    }
+//    for (int i = 0; i < (hist->vshapeUS_clear)->GetSize(); i++) {
+//        if ((hist->vshapeUS_clear)->GetBinContent(i) < Max_Short && (hist->vshapeUS_clear)->GetBinContent(i) != 0) {
+//            (hist->vshapeUS_clear)->SetBinContent(i, 0);
+//        }
+//    }
 
     hist->straw_L = (hist->vshapeUL_clear)->ProfileX();
     hist->straw_S = (hist->vshapeUS_clear)->ProfileX();
 
-    (hist->straw_L)->Fit(fit_prof_L, "QR", "SAME", -0.6, 0.5);
-    (hist->straw_S)->Fit(fit_prof_S, "QR", "SAME", -0.9, 1.1);
+    (hist->straw_L)->Fit(fit_prof_L, "QR", "SAME", left_limit_L, right_limit_L);
+    (hist->straw_S)->Fit(fit_prof_S, "QR", "SAME", left_limit_S, right_limit_S);
 
     a_L = fit_prof_L->GetParameter(2);
     b_L = fit_prof_L->GetParameter(1);
@@ -233,21 +254,58 @@ void linking_data::filling_hists(histos *hist, STRAW_presetting *straw, MAMBA_pr
         if ((straw->nt00 == 1) && (straw->nt08 == 1)) {
             (hist->vshapeUS)->Fill(mamba->spUPos[0], conversion * (straw->tt00 - straw->tt08)); //conversion = 25ms / 1024bits
             (hist->vshapeVS)->Fill(mamba->spVPos[0], conversion * (straw->tt00 - straw->tt08));
-            if (abs(mamba->spUPos[0]) <= 1.1) {
-//            if (conversion * (straw->tt00 - straw->tt08) > -60.0 && conversion * (straw->tt00 - straw->tt08) < 800.0) {
-                (hist->vshapeUS_clear)->Fill(mamba->spUPos[0], conversion * (straw->tt00 - straw->tt08));
-            }
         }
 
         if ((straw->nt01 == 1) && (straw->nt08 == 1)) {
             (hist->vshapeUL)->Fill(mamba->spUPos[0], conversion * (straw->tt01 - straw->tt08));
             (hist->vshapeVL)->Fill(mamba->spVPos[0], conversion * (straw->tt01 - straw->tt08));
-            if (abs(mamba->spUPos[0]) <= 0.6) {
-//            if (conversion * (straw->tt01 - straw->tt08) > -60.0 && conversion * (straw->tt01 - straw->tt08) < 210.0) {
-                (hist->vshapeUL_clear)->Fill(mamba->spUPos[0], conversion * (straw->tt01 - straw->tt08));
-            }
         }
         if (straw->nt00 == 1) (hist->n_hits_short_straw)->Fill(straw->nt08);
         if (straw->nt01 == 1) (hist->n_hits_long_straw)->Fill(straw->nt08);
+    }
+}
+
+
+void linking_data::limits_S(histos *hist, Double_t& limits) {
+    Double_t values[3] = {};
+    (&limits)[0]=(hist->vshapeUS_proj)->GetXaxis()->GetBinCenter((hist->vshapeUS_proj)->GetMaximumBin());
+    values[0]=(hist->vshapeUS_proj)->GetBinContent((hist->vshapeUS_proj)->GetMaximumBin());
+    (hist->vshapeUS_proj)->SetAxisRange((&limits)[0] - 2.5, (&limits)[0] - 1.9);
+    (&limits)[1]=(hist->vshapeUS_proj)->GetXaxis()->GetBinCenter((hist->vshapeUS_proj)->GetMaximumBin());
+    values[1]=(hist->vshapeUS_proj)->GetBinContent((hist->vshapeUS_proj)->GetMaximumBin());
+    (hist->vshapeUS_proj)->SetAxisRange((&limits)[0] + 1.9, (&limits)[0] + 2.5);
+    (&limits)[2]=(hist->vshapeUS_proj)->GetXaxis()->GetBinCenter((hist->vshapeUS_proj)->GetMaximumBin());
+    values[2]=(hist->vshapeUS_proj)->GetBinContent((hist->vshapeUS_proj)->GetMaximumBin());
+
+    if (values[1] < values[2]) {
+        (&limits)[1] = (&limits)[2];
+    }
+    if ((&limits)[1] < (&limits)[0]) {
+        Double_t temp = 0;
+        temp = (&limits)[0];
+        (&limits)[0] = (&limits)[1];
+        (&limits)[1] = temp;
+    }
+}
+
+void linking_data::limits_L(histos *hist, Double_t& limits) {
+    Double_t values[3] = {};
+    (&limits)[0] = (hist->vshapeUL_proj)->GetXaxis()->GetBinCenter((hist->vshapeUL_proj)->GetMaximumBin());
+    values[0] = (hist->vshapeUL_proj)->GetBinContent((hist->vshapeUL_proj)->GetMaximumBin());
+    (hist->vshapeUL_proj)->SetAxisRange((&limits)[0] - 1.5, (&limits)[0] - 0.9);
+    (&limits)[1] = (hist->vshapeUL_proj)->GetXaxis()->GetBinCenter((hist->vshapeUL_proj)->GetMaximumBin());
+    values[1] = (hist->vshapeUL_proj)->GetBinContent((hist->vshapeUL_proj)->GetMaximumBin());
+    (hist->vshapeUL_proj)->SetAxisRange((&limits)[0] + 0.9, (&limits)[0] + 1.5);
+    (&limits)[2] = (hist->vshapeUL_proj)->GetXaxis()->GetBinCenter((hist->vshapeUL_proj)->GetMaximumBin());
+    values[2] = (hist->vshapeUL_proj)->GetBinContent((hist->vshapeUL_proj)->GetMaximumBin());
+
+    if (values[1] < values[2]) {
+        (&limits)[1] = (&limits)[2];
+    }
+    if ((&limits)[1] < (&limits)[0]) {
+        Double_t temp = 0;
+        temp = (&limits)[0];
+        (&limits)[0] = (&limits)[1];
+        (&limits)[1] = temp;
     }
 }

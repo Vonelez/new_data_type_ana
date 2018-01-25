@@ -18,11 +18,11 @@ void histos::Init_histos() {
 
 // V-shapes (the r(t) relation) CLEAR
 // short straw = S
-    vshapeUS_clear = new TH2F("vshapeU_Short_clear", "vshapeU_Short_clear", 100, 0.0, 0.0, 100, 0.0, 0.0);
-    vshapeVS_clear = new TH2F("vshapeV_Short_clear", "vshapeV_Short_clear", 100, 0.0, 0.0, 100, 0.0, 0.0);
+    vshapeUS_clear = new TH2F("vshapeU_Short_clear", "vshapeU_Short_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeVS_clear = new TH2F("vshapeV_Short_clear", "vshapeV_Short_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
 // long straw = L
-    vshapeUL_clear = new TH2F("vshapeU_Long_clear", "vshapeU_Long_clear", 100, 0.0, 0.0, 100, 0.0, 0.0);
-    vshapeVL_clear = new TH2F("vshapeV_Long_clear", "vshapeV_Long_clear", 100, 0.0, 0.0, 100, 0.0, 0.0);
+    vshapeUL_clear = new TH2F("vshapeU_Long_clear", "vshapeU_Long_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeVL_clear = new TH2F("vshapeV_Long_clear", "vshapeV_Long_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
 
 
     Resolution_L = new TH1F("Straw Resolution L", "Straw Resolution L", 100, -0.4, 0.4);
@@ -30,8 +30,6 @@ void histos::Init_histos() {
 
     n_hits_long_straw = new TH1F("Hits in L straw", "Hits in L straw", 10, 0.0, 0.0);
     n_hits_short_straw = new TH1F("Hits in S straw", "Hits in S straw", 10, 0.0, 0.0);
-
-
 }
 
 void histos::Drawing_histos() {

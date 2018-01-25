@@ -47,6 +47,8 @@ public:
     vector<Double_t> timing_L, timing_S;
     vector<Double_t> StrawPoint_L, StrawPoint_S;
 
+    Double_t range_S[3] = {};
+    Double_t range_L[3] = {};
     Double_t left_limit_S, left_limit_L, right_limit_S, right_limit_L;
 
     linking_data(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree);
@@ -59,6 +61,8 @@ public:
     virtual void StrawResolution_L(histos *hist);
     virtual void StrawResolution_S(histos *hist);
     virtual void filling_hists(histos *hist, STRAW_presetting *straw, MAMBA_presetting *mamba);
+    virtual void limits_S(histos *hist, Double_t& limits);
+    virtual void limits_L(histos *hist, Double_t& limits);
 };
 
 #endif //ANALYSIS_LINKING_DATA_H
