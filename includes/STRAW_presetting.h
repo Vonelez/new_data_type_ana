@@ -20,7 +20,7 @@
 using namespace std;
 
 class STRAW_presetting {
-public:
+ public:
     Int_t PCclock;
     Int_t pattern;
     Int_t TDCtrig;
@@ -47,6 +47,5 @@ public:
     virtual void Init_STRAW_presetting();
     virtual void SetUpSTRAWTree(TTree *STRAW_EVENT_tree);
 };
-
 
 #endif //ANALYSIS_STRAW_PRESETTING_H

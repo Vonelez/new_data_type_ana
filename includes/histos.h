@@ -22,12 +22,10 @@
 #include "TGraphErrors.h"
 #include "TProfile.h"
 
-
 using namespace std;
 
 class histos {
-public:
-
+ public:
 
 // V-shapes (the r(t) relation)
 // short straw = S
@@ -40,9 +38,11 @@ public:
 // V-shapes (the r(t) relation) CLEAR
 // short straw = S
     TH2F *vshapeUS_clear;
+    TH2F *vshapeUS_cleaned;
     TH2F *vshapeVS_clear;
 // long straw = L
     TH2F *vshapeUL_clear;
+    TH2F *vshapeUL_cleaned;
     TH2F *vshapeVL_clear;
 
     TProfile *straw_L;
@@ -57,6 +57,8 @@ public:
     TH1D *vshapeUS_proj;
     TH1D *vshapeUL_proj;
 
+    TH1D *check_prof;
+
     TH1D *vshapeUS_proj_Y;
     TH1D *vshapeUL_proj_Y;
 
@@ -65,6 +67,5 @@ public:
     virtual void Init_histos();
     virtual void Drawing_histos();
 };
-
 
 #endif //ANALYSIS_HISTOS_H

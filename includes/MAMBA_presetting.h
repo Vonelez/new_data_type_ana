@@ -20,11 +20,11 @@
 using namespace std;
 
 class MAMBA_presetting {
-private:
+ private:
     static const Int_t length_ntrk = 10000;
     static const Int_t length_inter = 70000;
     static const Int_t length_sp = 140;
-public:
+ public:
     Int_t nevent;
     ULong64_t timestamp;
     Int_t nDet;

@@ -22,7 +22,7 @@
 #include "../includes/histos.h"
 
 class linking_data {
-public:
+ public:
     // TDC conversion for hits: 1024 is 25ns
     Double_t conversion;
 
@@ -44,8 +44,8 @@ public:
 
     Double_t vertex_err_L, vertex_err_S;
     Double_t Discrim2_L, Discrim2_S;
-    vector<Double_t> timing_L, timing_S;
-    vector<Double_t> StrawPoint_L, StrawPoint_S;
+    vector<Double_t> timing_L, timing_S, timing_L_after_cut, timing_S_after_cut;
+    vector<Double_t> StrawPoint_L, StrawPoint_S, StrawPoint_L_after_cut, StrawPoint_S_after_cut;
 
     Double_t range_S[3] = {};
     Double_t range_L[3] = {};
@@ -61,8 +61,8 @@ public:
     virtual void StrawResolution_L(histos *hist);
     virtual void StrawResolution_S(histos *hist);
     virtual void filling_hists(histos *hist, STRAW_presetting *straw, MAMBA_presetting *mamba);
-    virtual void limits_S(histos *hist, Double_t& limits);
-    virtual void limits_L(histos *hist, Double_t& limits);
+    virtual void limits_S(histos *hist, Double_t &limits);
+    virtual void limits_L(histos *hist, Double_t &limits);
 };
 
 #endif //ANALYSIS_LINKING_DATA_H

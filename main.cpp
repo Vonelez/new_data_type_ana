@@ -2,12 +2,12 @@
 #include "includes/linking_data.h"
 
 int main() {
-    TString dir ("/Users/andrew_zelenov/Documents/SHiP/DATA/SOFT/");
-    TString Name ("Synchronized_data_run_222.root");
+    TString dir("/Users/andrew_zelenov/Documents/SHiP/DATA/SOFT/");
+    TString Name("Synchronized_data_run_222.root");
 
-    TString RootName (dir + Name);
+    TString RootName(dir + Name);
 
-    TFile *AnaFile = TFile::Open(RootName,"read");
+    TFile *AnaFile = TFile::Open(RootName, "read");
     TTree *mt;
     TTree *st;
     AnaFile->GetObject("tree", mt);
