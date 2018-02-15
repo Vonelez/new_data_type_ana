@@ -30,7 +30,7 @@ EXEC = tb2017ana
 SOURCE_DIR = source
 
 #list here all the source files
-SRC = main.cpp $(SOURCE_DIR)/histos.cpp $(SOURCE_DIR)/MAMBA_presetting.cpp $(SOURCE_DIR)/STRAW_presetting.cpp $(SOURCE_DIR)/linking_data.cpp 
+SRC = main.cpp $(SOURCE_DIR)/histos.cpp $(SOURCE_DIR)/MAMBA_presetting.cpp $(SOURCE_DIR)/STRAW_presetting.cpp $(SOURCE_DIR)/linking_data.cpp $(SOURCE_DIR)/profiling.cpp
 
 #A directory for build artefacts
 BUILD_DIR = Build

@@ -57,7 +57,9 @@ class histos {
     TH1D *vshapeUS_proj;
     TH1D *vshapeUL_proj;
 
-    TH1D *check_prof;
+    TH1F *check_prof;
+
+    TGraphErrors *g;
 
     TH1D *vshapeUS_proj_Y;
     TH1D *vshapeUL_proj_Y;

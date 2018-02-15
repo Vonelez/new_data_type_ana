@@ -20,6 +20,7 @@
 #include "../includes/MAMBA_presetting.h"
 #include "../includes/STRAW_presetting.h"
 #include "../includes/histos.h"
+#include "../includes/profiling.h"
 
 class linking_data {
  public:
@@ -63,6 +64,7 @@ class linking_data {
     virtual void filling_hists(histos *hist, STRAW_presetting *straw, MAMBA_presetting *mamba);
     virtual void limits_S(histos *hist, Double_t &limits);
     virtual void limits_L(histos *hist, Double_t &limits);
+    virtual void draft(histos *hist, profiling *profile);
 };
 
 #endif //ANALYSIS_LINKING_DATA_H

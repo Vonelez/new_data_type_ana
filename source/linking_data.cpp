@@ -47,6 +47,7 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
     auto *straw = new STRAW_presetting(STRAW_EVENT_tree);
     auto *mamba = new MAMBA_presetting(MAMBA_EVENT_tree);
     auto *hist = new histos();
+    auto *profile = new profiling();
 
     mam_nEntries = (Int_t) MAMBA_EVENT_tree->GetEntries();
     N = mam_nEntries;
@@ -88,6 +89,8 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
     right_limit_S = range_S[1] + 3;
     right_limit_L = range_L[1] - 3;
 
+    cout << "------- " << StrawPoint_S.size() << endl;
+
     for (int i = 0; i < StrawPoint_S.size(); i++) {
         if (StrawPoint_S.at(i) >= left_limit_S && StrawPoint_S.at(i) <= right_limit_S) {
             (hist->vshapeUS_clear)->Fill(StrawPoint_S.at(i), timing_S.at(i));
@@ -95,8 +98,13 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
                 StrawPoint_S_after_cut.push_back(StrawPoint_S.at(i));
                 timing_S_after_cut.push_back(timing_S.at(i));
             }
+            if (StrawPoint_S.at(i) >= -5.0 && StrawPoint_S.at(i) <= -4.8) {
+                (hist->check_prof)->Fill(timing_S.at(i));
+            }
         }
     }
+
+
     for (int i = 0; i < StrawPoint_L.size(); i++) {
         if (StrawPoint_L.at(i) >= left_limit_L && StrawPoint_L.at(i) <= right_limit_L) {
             (hist->vshapeUL_clear)->Fill(StrawPoint_L.at(i), timing_L.at(i));
@@ -108,6 +116,7 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
     }
 
     makingProfile(hist);
+    draft(hist, profile);
     StrawResolution_S(hist);
     StrawResolution_L(hist);
 
@@ -233,12 +242,23 @@ void linking_data::StrawResolution_L(histos *hist) {
 void linking_data::StrawResolution_S(histos *hist) {
     Double_t mindev = 99999, maxdev = -9999999;
 
+    Double_t b_S_check = -19.88;
+    Double_t c_S_check = 9.149;
+    Double_t a_S_check = 6.771;
+
     for (int i = 0; i < timing_S_after_cut.size(); ++i) {
-        Discrim2_S = (b_S * b_S) - 4.0 * a_S * (c_S - timing_S_after_cut.at(i));
+//        Discrim2_S = (b_S * b_S) - 4.0 * a_S * (c_S - timing_S_after_cut.at(i));
+//        if (Discrim2_S < 0) continue;
+//        Double_t discr = sqrt(Discrim2_S);
+//        Double_t tekdev_plus = (-b_S + discr) / (2.0 * a_S);
+//        Double_t tekdev_minus = (-b_S - discr) / (2.0 * a_S);
+
+        Discrim2_S = (b_S_check * b_S_check) - 4.0 * a_S_check * (c_S_check - timing_S_after_cut.at(i));
         if (Discrim2_S < 0) continue;
         Double_t discr = sqrt(Discrim2_S);
-        Double_t tekdev_plus = (-b_S + discr) / (2.0 * a_S);
-        Double_t tekdev_minus = (-b_S - discr) / (2.0 * a_S);
+        Double_t tekdev_plus = (-b_S_check + discr) / (2.0 * a_S_check);
+        Double_t tekdev_minus = (-b_S_check - discr) / (2.0 * a_S_check);
+
         Double_t tekdev;
 
         if (fabs(tekdev_minus - StrawPoint_S_after_cut.at(i)) > fabs(tekdev_plus - StrawPoint_S_after_cut.at(i))) {
@@ -316,4 +336,8 @@ void linking_data::limits_L(histos *hist, Double_t &limits) {
         (&limits)[0] = (&limits)[1];
         (&limits)[1] = temp;
     }
+}
+
+void linking_data::draft(histos *hist, profiling *profile) {
+    profile->main_algorithm((hist->vshapeUS_clear)->FindFirstBinAbove(), (hist->vshapeUS_clear)->FindLastBinAbove(), hist->vshapeUS_clear, hist);
 }

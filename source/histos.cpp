@@ -22,7 +22,7 @@ void histos::Init_histos() {
 
 // V-shapes (the r(t) relation) CLEAR
 // short straw = S
-    vshapeUS_clear = new TH2F("vshapeU_Short_clear", "vshapeU_Short_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeUS_clear = new TH2F("vshapeU_Short_clear", "vshapeU_Short_clear", 150, 0.0, 0.0, 150, -200.0, 900.0);
     vshapeUS_clear->GetXaxis()->SetTitle("U (mm)");
     vshapeUS_clear->GetYaxis()->SetTitle("T (ns)");
     vshapeVS_clear = new TH2F("vshapeV_Short_clear", "vshapeV_Short_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
@@ -39,6 +39,10 @@ void histos::Init_histos() {
 
     n_hits_long_straw = new TH1F("Hits in L straw", "Hits in L straw", 10, 0.0, 0.0);
     n_hits_short_straw = new TH1F("Hits in S straw", "Hits in S straw", 10, 0.0, 0.0);
+
+    check_prof = new TH1F("Check", "Check", 200, 0, 0);
+
+    g = new TGraphErrors();
 }
 
 void histos::Drawing_histos() {
@@ -65,6 +69,10 @@ void histos::Drawing_histos() {
 
     Resolution_L->Write("Resolution L");
     Resolution_S->Write("Resolution S");
+
+    check_prof->Write("checking");
+
+    g->Write("Ama TGraph");
 
     TCanvas *shapes = new TCanvas("Shapes", "Shapes", 1440, 1000);
     shapes->Divide(2, 2);
