@@ -10,27 +10,27 @@ histos::~histos() = default;
 void histos::Init_histos() {
 // V-shapes (the r(t) relation)
 // short straw = S
-    vshapeUS = new TH2F("vshapeU_Short", "vshapeU_Short", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeUS = new TH2F("vshapeU_Short", "vshapeU_Short", 150, 0.0, 0.0, 300, 0.0, 0.0);
     vshapeUS->GetXaxis()->SetTitle("U (mm)");
     vshapeUS->GetYaxis()->SetTitle("T (ns)");
-    vshapeVS = new TH2F("vshapeV_Short", "vshapeV_Short", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeVS = new TH2F("vshapeV_Short", "vshapeV_Short", 150, 0.0, 0.0, 300, 0.0, 0.0);
 // long straw = L
-    vshapeUL = new TH2F("vshapeU_Long", "vshapeU_Long", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeUL = new TH2F("vshapeU_Long", "vshapeU_Long", 150, 0.0, 0.0, 300, 0.0, 0.0);
     vshapeUL->GetXaxis()->SetTitle("U (mm)");
     vshapeUL->GetYaxis()->SetTitle("T (ns)");
-    vshapeVL = new TH2F("vshapeV_Long", "vshapeV_Long", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeVL = new TH2F("vshapeV_Long", "vshapeV_Long", 150, 0.0, 0.0, 300, 0.0, 0.0);
 
 // V-shapes (the r(t) relation) CLEAR
 // short straw = S
-    vshapeUS_clear = new TH2F("vshapeU_Short_clear", "vshapeU_Short_clear", 150, 0.0, 0.0, 150, -200.0, 900.0);
+    vshapeUS_clear = new TH2F("vshapeU_Short_clear", "vshapeU_Short_clear", 150, 0.0, 0.0, 300, 0.0, 0.0);
     vshapeUS_clear->GetXaxis()->SetTitle("U (mm)");
     vshapeUS_clear->GetYaxis()->SetTitle("T (ns)");
-    vshapeVS_clear = new TH2F("vshapeV_Short_clear", "vshapeV_Short_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeVS_clear = new TH2F("vshapeV_Short_clear", "vshapeV_Short_clear", 150, 0.0, 0.0, 300, 0.0, 0.0);
 // long straw = L
-    vshapeUL_clear = new TH2F("vshapeU_Long_clear", "vshapeU_Long_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeUL_clear = new TH2F("vshapeU_Long_clear", "vshapeU_Long_clear", 150, 0.0, 0.0, 300, 0.0, 0.0);
     vshapeUL_clear->GetXaxis()->SetTitle("U (mm)");
     vshapeUL_clear->GetYaxis()->SetTitle("T (ns)");
-    vshapeVL_clear = new TH2F("vshapeV_Long_clear", "vshapeV_Long_clear", 150, 0.0, 0.0, 150, 0.0, 0.0);
+    vshapeVL_clear = new TH2F("vshapeV_Long_clear", "vshapeV_Long_clear", 150, 0.0, 0.0, 300, 0.0, 0.0);
 
     Resolution_L = new TH1F("Straw Resolution L", "Straw Resolution L", 200, -4, 4);
     Resolution_L->GetXaxis()->SetTitle("Residual (mm)");
@@ -40,9 +40,9 @@ void histos::Init_histos() {
     n_hits_long_straw = new TH1F("Hits in L straw", "Hits in L straw", 10, 0.0, 0.0);
     n_hits_short_straw = new TH1F("Hits in S straw", "Hits in S straw", 10, 0.0, 0.0);
 
-    check_prof = new TH1F("Check", "Check", 200, 0, 0);
-
     g = new TGraphErrors();
+    sigma = new TGraphErrors();
+    U_res = new TGraphErrors();
 }
 
 void histos::Drawing_histos() {
@@ -70,9 +70,9 @@ void histos::Drawing_histos() {
     Resolution_L->Write("Resolution L");
     Resolution_S->Write("Resolution S");
 
-    check_prof->Write("checking");
-
-    g->Write("Ama TGraph");
+    g->Write("Parabola");
+    sigma->Write("Sigma(x)");
+    U_res->Write("RESOL");
 
     TCanvas *shapes = new TCanvas("Shapes", "Shapes", 1440, 1000);
     shapes->Divide(2, 2);
@@ -109,6 +109,19 @@ void histos::Drawing_histos() {
     Resolution_S->Draw();
     resol->cd(2);
     Resolution_L->Draw();
+
+    g->SetLineColor(3);
+    //making legends for hists
+    auto leg1 = new TLegend(0.47, 0.73, 0.9, 0.9);
+    leg1->AddEntry(g, "bin by bin mean", "l");
+    leg1->AddEntry(straw_S, "VShape profile", "l");
+
+    TCanvas *prof_graph = new TCanvas("TProfile vs bin by bin fit", "TProfile vs bin by bin fit", 720, 500);
+    prof_graph->cd();
+    g->Draw("apL");
+    straw_S->Draw("SAME");
+    leg1->Draw();
+    prof_graph->Write("2plots");
 
     TString way("/Users/andrew_zelenov/Documents/SHiP/new_data_type_ana/img/");
     TString shape_name("Shapes.pdf");

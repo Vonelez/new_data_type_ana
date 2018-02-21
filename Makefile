@@ -21,7 +21,7 @@ INCPATH = ${PATH_ITS}
 #FLAGS_X = -lX11 -lXmu -lXi 
 #FLAGS_OPENGL = -lGL -lGLU
 #FLAGS_BOOST = -lboost_system -lboost_filesystem
-OTHER_FLAGS = -lm -lstdc++ -std=c++11
+OTHER_FLAGS = -lm -lstdc++ -std=c++11 -lMinuit
 LDFLAGS =  ${OTHER_FLAGS} $(shell root-config --glibs) 
 
 #executable name

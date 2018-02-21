@@ -19,8 +19,10 @@
 #include "TGraph.h"
 #include <algorithm>
 #include <functional>
+#include "TMinuit.h"
 #include "TGraphErrors.h"
 #include "TProfile.h"
+#include "TLegend.h"
 
 using namespace std;
 
@@ -57,9 +59,9 @@ class histos {
     TH1D *vshapeUS_proj;
     TH1D *vshapeUL_proj;
 
-    TH1F *check_prof;
-
     TGraphErrors *g;
+    TGraphErrors *sigma;
+    TGraphErrors *U_res;
 
     TH1D *vshapeUS_proj_Y;
     TH1D *vshapeUL_proj_Y;

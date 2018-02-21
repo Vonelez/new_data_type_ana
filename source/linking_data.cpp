@@ -98,9 +98,6 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
                 StrawPoint_S_after_cut.push_back(StrawPoint_S.at(i));
                 timing_S_after_cut.push_back(timing_S.at(i));
             }
-            if (StrawPoint_S.at(i) >= -5.0 && StrawPoint_S.at(i) <= -4.8) {
-                (hist->check_prof)->Fill(timing_S.at(i));
-            }
         }
     }
 
@@ -242,9 +239,9 @@ void linking_data::StrawResolution_L(histos *hist) {
 void linking_data::StrawResolution_S(histos *hist) {
     Double_t mindev = 99999, maxdev = -9999999;
 
-    Double_t b_S_check = -19.88;
-    Double_t c_S_check = 9.149;
-    Double_t a_S_check = 6.771;
+    Double_t b_S_check = -15.4;
+    Double_t c_S_check = -14.12;
+    Double_t a_S_check = 7.102;
 
     for (int i = 0; i < timing_S_after_cut.size(); ++i) {
 //        Discrim2_S = (b_S * b_S) - 4.0 * a_S * (c_S - timing_S_after_cut.at(i));
@@ -340,4 +337,22 @@ void linking_data::limits_L(histos *hist, Double_t &limits) {
 
 void linking_data::draft(histos *hist, profiling *profile) {
     profile->main_algorithm((hist->vshapeUS_clear)->FindFirstBinAbove(), (hist->vshapeUS_clear)->FindLastBinAbove(), hist->vshapeUS_clear, hist);
+    (hist->g)->Fit("pol2", "QR", "SAME", left_limit_S + 1.5, right_limit_S - 1.5);
+    TF1 *fit_func_parabola = (hist->g)->GetFunction("pol2");
+    (profile->a_param_sigma) = fit_func_parabola->GetParameter(2);
+    (profile->b_param_sigma) = fit_func_parabola->GetParameter(1);
+
+    for (int i = 0; i < (hist->sigma)->GetN(); ++i) {
+        Double_t Y = 0;
+        Double_t X = 0;
+        Double_t Y_err = 0;
+        Double_t X_err = 0;
+
+        (hist->sigma)->GetPoint(i, X, Y);
+        Y = Y / abs(2*(profile->a_param_sigma)*X + (profile->b_param_sigma));
+        X_err = (hist->sigma)->GetErrorX(i);
+        Y_err = (hist->sigma)->GetErrorY(i) / abs(2*(profile->a_param_sigma)*X + (profile->b_param_sigma));
+        (hist->U_res)->SetPoint(i, X, Y);
+        (hist->U_res)->SetPointError(i, X_err, Y_err);
+    }
 }
