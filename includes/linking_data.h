@@ -34,6 +34,8 @@ class linking_data {
     Int_t count_good;
     Int_t count_very_good;  // have a good track
 
+    Long_t run;
+
     Double_t Max_Short, Max_Long;
     Double_t a_L, b_L, c_L;
     Double_t a_S, b_S, c_S;
@@ -52,7 +54,7 @@ class linking_data {
     Double_t range_L[3] = {};
     Double_t left_limit_S, left_limit_L, right_limit_S, right_limit_L;
 
-    linking_data(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree);
+    linking_data(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree, Long_t run_num);
 
     virtual ~linking_data();
     virtual void init();
@@ -60,7 +62,7 @@ class linking_data {
     virtual void track_ana(MAMBA_presetting *mamba, STRAW_presetting *straw);
     virtual void makingProfile(histos *hist);
     virtual void StrawResolution_L(histos *hist);
-    virtual void StrawResolution_S(histos *hist);
+    virtual void StrawResolution_S(Double_t a, Double_t b, Double_t c, TH1F *histo);
     virtual void filling_hists(histos *hist, STRAW_presetting *straw, MAMBA_presetting *mamba);
     virtual void limits_S(histos *hist, Double_t &limits);
     virtual void limits_L(histos *hist, Double_t &limits);

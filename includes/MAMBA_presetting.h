@@ -23,7 +23,7 @@ class MAMBA_presetting {
  private:
     static const Int_t length_ntrk = 10000;
     static const Int_t length_inter = 70000;
-    static const Int_t length_sp = 140;
+    static const Int_t length_sp = 1400;
  public:
     Int_t nevent;
     ULong64_t timestamp;

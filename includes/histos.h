@@ -28,6 +28,7 @@ using namespace std;
 
 class histos {
  public:
+    Long_t run;
 
 // V-shapes (the r(t) relation)
 // short straw = S
@@ -52,6 +53,7 @@ class histos {
 
     TH1F *Resolution_L;
     TH1F *Resolution_S;
+    TH1F *Resolution_S_bins;
 
     TH1F *n_hits_long_straw;
     TH1F *n_hits_short_straw;
@@ -62,11 +64,15 @@ class histos {
     TGraphErrors *g;
     TGraphErrors *sigma;
     TGraphErrors *U_res;
+    TGraphErrors *gnew;
+    TGraphErrors *resolgeom;
+    TGraph *chi_ndf;
+    TGraph *ndf;
 
     TH1D *vshapeUS_proj_Y;
     TH1D *vshapeUL_proj_Y;
 
-    histos();
+    histos(Long_t run_num);
     virtual ~histos();
     virtual void Init_histos();
     virtual void Drawing_histos();

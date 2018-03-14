@@ -1,6 +1,7 @@
 #include "../includes/linking_data.h"
 
-linking_data::linking_data(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
+linking_data::linking_data(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree, Long_t run_num) {
+    run = run_num;
     init();
     merging(STRAW_EVENT_tree, MAMBA_EVENT_tree);
 }
@@ -46,7 +47,7 @@ void linking_data::init() {
 void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
     auto *straw = new STRAW_presetting(STRAW_EVENT_tree);
     auto *mamba = new MAMBA_presetting(MAMBA_EVENT_tree);
-    auto *hist = new histos();
+    auto *hist = new histos(run);
     auto *profile = new profiling();
 
     mam_nEntries = (Int_t) MAMBA_EVENT_tree->GetEntries();
@@ -78,30 +79,32 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
     }
     cout << endl;
 
+    profile->main_algorithm((hist->vshapeUS)->FindFirstBinAbove(), (hist->vshapeUS)->FindLastBinAbove(), hist->vshapeUS, hist);
+    profile->finding_range(hist);
+
+
     (hist->vshapeUS_proj) = (hist->vshapeUS)->ProjectionX();
     // need to make copies of this hist because range will be changed in Limits_S/L
     (hist->vshapeUL_proj) = (hist->vshapeUL)->ProjectionX();
 
     limits_S(hist, *range_S);
     limits_L(hist, *range_L);
-    left_limit_S = range_S[0] - 1;
+    left_limit_S = profile->Max1 - 2;
     left_limit_L = range_L[0];
-    right_limit_S = range_S[1] + 3;
+    right_limit_S = profile->Max2 + 2;
     right_limit_L = range_L[1] - 3;
-
-    cout << "------- " << StrawPoint_S.size() << endl;
 
     for (int i = 0; i < StrawPoint_S.size(); i++) {
         if (StrawPoint_S.at(i) >= left_limit_S && StrawPoint_S.at(i) <= right_limit_S) {
             (hist->vshapeUS_clear)->Fill(StrawPoint_S.at(i), timing_S.at(i));
-            if (StrawPoint_S.at(i) >= left_limit_S + 1.5 && StrawPoint_S.at(i) <= right_limit_S - 1.5) {
+            if (StrawPoint_S.at(i) >= left_limit_S + 2 && StrawPoint_S.at(i) <= right_limit_S - 2) {
                 StrawPoint_S_after_cut.push_back(StrawPoint_S.at(i));
                 timing_S_after_cut.push_back(timing_S.at(i));
             }
         }
     }
 
-
+/// need to be changed
     for (int i = 0; i < StrawPoint_L.size(); i++) {
         if (StrawPoint_L.at(i) >= left_limit_L && StrawPoint_L.at(i) <= right_limit_L) {
             (hist->vshapeUL_clear)->Fill(StrawPoint_L.at(i), timing_L.at(i));
@@ -111,10 +114,17 @@ void linking_data::merging(TTree *STRAW_EVENT_tree, TTree *MAMBA_EVENT_tree) {
             }
         }
     }
+    (hist->gnew) = (TGraphErrors *)(hist->g)->Clone();
+    (hist->gnew)->GetXaxis()->SetLimits(left_limit_S, right_limit_S);
+    (hist->sigma)->GetXaxis()->SetLimits(left_limit_S, right_limit_S);
+
+
+    draft(hist, profile);
+
+    (hist->U_res)->GetXaxis()->SetLimits(left_limit_S + 2, right_limit_S - 2);
 
     makingProfile(hist);
-    draft(hist, profile);
-    StrawResolution_S(hist);
+    StrawResolution_S(a_S, b_S, c_S, (hist->Resolution_S));
     StrawResolution_L(hist);
 
     cout << "Linkdata: Events processed: " << count_processed << endl;
@@ -178,10 +188,11 @@ void linking_data::makingProfile(histos *hist) {
     (hist->vshapeUL_proj_Y) = (hist->vshapeUL_cleaned)->ProjectionY();
 
     (hist->straw_L) = (hist->vshapeUL_clear)->ProfileX("L Straw Profile", -1, -1, "o");
-    (hist->straw_S) = (hist->vshapeUS_clear)->ProfileX("S Straw Profile", -1, -1, "o");
+    (hist->straw_S) = (hist->vshapeUS)->ProfileX("S Straw Profile", -1, -1, "o");
+    (hist->straw_S)->GetXaxis()->SetRangeUser(left_limit_S, right_limit_S);
 
     (hist->straw_L)->Fit(fit_prof_L, "QR", "SAME", left_limit_L + 0.5, right_limit_L - 0.5);
-    (hist->straw_S)->Fit(fit_prof_S, "QR", "SAME", left_limit_S + 1.5, right_limit_S - 1.5);
+    (hist->straw_S)->Fit(fit_prof_S, "QR", "SAME", left_limit_S + 2, right_limit_S - 2);
 
     a_L = fit_prof_L->GetParameter(2);
     b_L = fit_prof_L->GetParameter(1);
@@ -199,14 +210,6 @@ void linking_data::makingProfile(histos *hist) {
 
     vertex_err_L = (1.0 / 2.0) * (abs((1 / a_L) * b_L_err) + abs((b_L / (a_L * a_L)) * a_L_err));
     vertex_err_S = (1.0 / 2.0) * (abs((1 / a_S) * b_S_err) + abs((b_S / (a_S * a_S)) * a_S_err));
-
-    cout << "Parabolic parameters (For Long Straw): " << a_L << " " << b_L << " " << c_L << endl;
-    cout << "Parabolic parameters (For Short Straw): " << a_S << " " << b_S << " " << c_S << endl;
-    cout << "Parabolic parameters errors (For Long Straw): " << a_L_err << " " << b_L_err << " " << c_L_err << endl;
-    cout << "Parabolic parameters errors (For Short Straw): " << a_S_err << " " << b_S_err << " " << c_S_err << endl;
-
-    cout << "=====> Vertex (Long Straw)= " << -b_L / (2.0 * a_L) << " " << vertex_err_L << endl;
-    cout << "=====> Vertex (Short Straw)= " << -b_S / (2.0 * a_S) << " " << vertex_err_S << endl;
 
 }
 void linking_data::StrawResolution_L(histos *hist) {
@@ -236,25 +239,16 @@ void linking_data::StrawResolution_L(histos *hist) {
 
     (hist->Resolution_L)->Fit("gaus", "QR", "SAME", -0.5, 0.5);
 }
-void linking_data::StrawResolution_S(histos *hist) {
+void linking_data::StrawResolution_S(Double_t a, Double_t b, Double_t c, TH1F *histo) {
     Double_t mindev = 99999, maxdev = -9999999;
 
-    Double_t b_S_check = -15.4;
-    Double_t c_S_check = -14.12;
-    Double_t a_S_check = 7.102;
 
     for (int i = 0; i < timing_S_after_cut.size(); ++i) {
-//        Discrim2_S = (b_S * b_S) - 4.0 * a_S * (c_S - timing_S_after_cut.at(i));
-//        if (Discrim2_S < 0) continue;
-//        Double_t discr = sqrt(Discrim2_S);
-//        Double_t tekdev_plus = (-b_S + discr) / (2.0 * a_S);
-//        Double_t tekdev_minus = (-b_S - discr) / (2.0 * a_S);
-
-        Discrim2_S = (b_S_check * b_S_check) - 4.0 * a_S_check * (c_S_check - timing_S_after_cut.at(i));
+        Discrim2_S = (b * b) - 4.0 * a * (c - timing_S_after_cut.at(i));
         if (Discrim2_S < 0) continue;
         Double_t discr = sqrt(Discrim2_S);
-        Double_t tekdev_plus = (-b_S_check + discr) / (2.0 * a_S_check);
-        Double_t tekdev_minus = (-b_S_check - discr) / (2.0 * a_S_check);
+        Double_t tekdev_plus = (-b + discr) / (2.0 * a);
+        Double_t tekdev_minus = (-b - discr) / (2.0 * a);
 
         Double_t tekdev;
 
@@ -269,10 +263,10 @@ void linking_data::StrawResolution_S(histos *hist) {
         if (tekdev > maxdev) {
             maxdev = tekdev;
         }
-        (hist->Resolution_S)->Fill(tekdev - StrawPoint_S_after_cut.at(i));
+        histo->Fill(tekdev - StrawPoint_S_after_cut.at(i));
     }
 
-    (hist->Resolution_S)->Fit("gaus", "QR", "SAME", -0.5, 0.5);
+    histo->Fit("gaus", "QR", "SAME", -0.5, 0.5);
 }
 void linking_data::filling_hists(histos *hist, STRAW_presetting *straw, MAMBA_presetting *mamba) {
     if (mamba->ntrk == 1) {
@@ -336,11 +330,11 @@ void linking_data::limits_L(histos *hist, Double_t &limits) {
 }
 
 void linking_data::draft(histos *hist, profiling *profile) {
-    profile->main_algorithm((hist->vshapeUS_clear)->FindFirstBinAbove(), (hist->vshapeUS_clear)->FindLastBinAbove(), hist->vshapeUS_clear, hist);
-    (hist->g)->Fit("pol2", "QR", "SAME", left_limit_S + 1.5, right_limit_S - 1.5);
-    TF1 *fit_func_parabola = (hist->g)->GetFunction("pol2");
+    (hist->gnew)->Fit("pol2", "QR", "SAME", left_limit_S + 2, right_limit_S - 2);
+    TF1 *fit_func_parabola = (hist->gnew)->GetFunction("pol2");
     (profile->a_param_sigma) = fit_func_parabola->GetParameter(2);
     (profile->b_param_sigma) = fit_func_parabola->GetParameter(1);
+    (profile->c_param_sigma) = fit_func_parabola->GetParameter(0);
 
     for (int i = 0; i < (hist->sigma)->GetN(); ++i) {
         Double_t Y = 0;
@@ -355,4 +349,11 @@ void linking_data::draft(histos *hist, profiling *profile) {
         (hist->U_res)->SetPoint(i, X, Y);
         (hist->U_res)->SetPointError(i, X_err, Y_err);
     }
+
+    StrawResolution_S((profile->a_param_sigma), (profile->b_param_sigma), (profile->c_param_sigma), (hist->Resolution_S_bins));
+    profile->maean_and_wm(hist);
+    profile->geometric_resol(hist);
+    (hist->resolgeom)->GetXaxis()->SetRangeUser(left_limit_S + 2, right_limit_S - 2);
+    (hist->chi_ndf)->GetXaxis()->SetRangeUser(left_limit_S + 2, right_limit_S - 2);
+    (hist->ndf)->GetXaxis()->SetRangeUser(left_limit_S + 2, right_limit_S - 2);
 }
